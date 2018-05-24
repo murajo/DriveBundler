@@ -1,0 +1,10 @@
+<form action="/drivebundler/google/" method="post">
+  {% csrf_token %}
+  <input type="text" value="" name="title" placeholder="タイトル">
+  <input type="text" value="" name="text" placeholder="テキスト">
+  <input type="submit" value="write">
+</form>
+
+<br>
+{{test}}
+{{title}}

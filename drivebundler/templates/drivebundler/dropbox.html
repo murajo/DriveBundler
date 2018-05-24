@@ -1,0 +1,13 @@
+{{result}}<br>
+{{list}}<br>
+{{droplist}}
+<form action="/drivebundler/dropbox/" method="post">
+  {% csrf_token %}
+  <input type="text" value="" name="upload_source" placeholder="アップロードするファイル">
+  <input type="text" value="" name="upload_destination" placeholder="アップロード先">
+  <input type="submit" value="upload" name="submit">
+  <br>
+  <input type="text" value="" name="download_source" placeholder="ダウンロードするファイル">
+  <input type="text" value="" name="download_destination" placeholder="ダウンロード先">
+  <input type="submit" value="download" name="submit">
+</form>
