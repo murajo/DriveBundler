@@ -3,6 +3,7 @@ import os
 from drivebundler.consts import PREF_CHOICE
 from django.db import models
 import dropbox
+import logging
 # Create your models here.
 class Dropbox(models.Model):
     text = models.CharField(max_length=200)
@@ -17,13 +18,21 @@ class Dropbox(models.Model):
     def print_test():
         return 'aaa'
 
-    # ファイルアップロード
-    def drive_upload(source_file, destination_path):
+    # アップロード
+    def drive_upload(source_file, destination_path, path_log = ''):
+        if path_log == '': path = source_file
+        else : path = path_log + '/' + source_file
+        logging.debug(path_log)
         dbx = dropbox.Dropbox(PREF_CHOICE['DROPBOX_ACCESS_TOKEN'])
         dbx.users_get_current_account()
-        f = open(source_file, 'rb')
-        dbx.files_upload(f.read(),destination_path)
-        f.close()
+        source_path = os.path.expanduser('~') + "/" + path
+        if os.path.isfile(source_path):
+            f = open(source_path, 'rb')
+            dbx.files_upload(f.read(),'' + '/' + path)
+            f.close()
+        elif os.path.isdir(source_path):
+            dbx.files_create_folder('/' + source_file)
+            Dropbox.folder_conversion(source_path, destination_path + '/' + source_file, path)
         return
 
     # アプリディレクトリにあるフォルダ,ファイルの一覧を返す
@@ -36,17 +45,24 @@ class Dropbox(models.Model):
                 file_list.append(entry.name)
             else:
                 folder_list.append(entry.name)
-        return folder_list
+        return file_list, folder_list
 
     # ファイルダウンロード
-    def drive_download():
+    def drive_download(source_path, destination_path):
         dbx = dropbox.Dropbox(PREF_CHOICE['DROPBOX_ACCESS_TOKEN'])
         #dbx.files_create_folder('/' + "server")
-        metadata,f = dbx.files_download('/client.json')
-        out = open(os.environ['HOME'] + "/checks", 'wb')
+        metadata,f = dbx.files_download(source_path)
+        out = open(destination_path, 'wb')
         out.write(f.content)
         out.close()
         return f
+
+    def folder_conversion(source_path, destination_path, path_log):
+        list = os.listdir(source_path)
+        logging.debug(list)
+        for file in list:
+            Dropbox.drive_upload(file, destination_path, path_log)
+        return
 
     # ディレクトリ作成
     def create_folder(path, name):

@@ -41,7 +41,7 @@ def dropbox(request):
     result = ''
     if request.method == "POST":
         if request.POST.get("submit") == "upload":
-            source_path = os.path.expanduser('~') + "/" + request.POST.get("upload_source")
+            source_path = request.POST.get("upload_source")
             destination_path = "/" + request.POST.get("upload_destination")
             Dropbox.drive_upload(source_path, destination_path)
         elif request.POST.get("submit") == "download":
@@ -49,14 +49,10 @@ def dropbox(request):
             destination_path = request.POST.get("download_destination")
             Dropbox.drive_download(source_path,destination_path)
         result = request.POST.get("submit")
-        # source_path = request.POST.get("source_path")
-        # Dropbox.drive_upload()
-        # bool = 'true'
-    drop_list = Dropbox.drive_read()
-    #download_result = Dropbox.drive_download()
+    file_list, folder_list = Dropbox.drive_read()
     params = {
-        'list': drop_list,
+        'file_list': file_list,
+        'folder_list': folder_list,
         'result':result
-        #'result': download_result
     }
     return render(request, 'drivebundler/dropbox.html', params)
