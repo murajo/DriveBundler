@@ -4,6 +4,7 @@ from drivebundler.consts import PREF_CHOICE
 from django.db import models
 import dropbox
 import logging
+import traceback
 # Create your models here.
 class Dropbox(models.Model):
     text = models.CharField(max_length=200)
@@ -50,13 +51,24 @@ class Dropbox(models.Model):
     # ファイルダウンロード
     def drive_download(source_path, destination_path):
         dbx = dropbox.Dropbox(PREF_CHOICE['DROPBOX_ACCESS_TOKEN'])
-        #dbx.files_create_folder('/' + "server")
-        metadata,f = dbx.files_download(source_path)
-        out = open(destination_path, 'wb')
-        out.write(f.content)
-        out.close()
-        return f
+        try:
+            metadata,f = dbx.files_download(source_path)
+        except Exception as err_msg:
+            # logging.debug("except now")
+            # logging.debug(err_msg)
+            # logging.debug(type(err_msg))
+            debug_msg = traceback.format_exc()
+            if debug_msg.count(PREF_CHOICE['DROPBOX_FOLDER_ERROR']):
+                logging.debug('joujou')
+        else:
+            out = open(destination_path, 'wb')
+            out.write(f.content)
+            out.close()
+            return f
+        # metadata,f = dbx.files_download(source_path)
+        # return f
 
+    #アップロード元がフォルダのときに呼ばれファイルアップロードを繰り返し呼ぶ
     def folder_conversion(source_path, destination_path, path_log):
         list = os.listdir(source_path)
         logging.debug(list)
